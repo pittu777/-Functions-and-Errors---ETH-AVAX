@@ -1,16 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract SchoolGradingSystem {
+import "hardhat/console.sol";
+
+contract VotingSystem {
     address public owner;
-
-    struct Student {
-        string name;
-        uint grade;
-    }
-
-    mapping(address => Student) private students;
-    mapping(address => bool) private studentExists;
+    uint public voterAge;
+    mapping(address => bool) public hasVoted;
+    mapping(uint => uint) public votes;
 
     constructor() {
         owner = msg.sender;
@@ -21,46 +18,42 @@ contract SchoolGradingSystem {
         _;
     }
 
-    modifier studentNotExists() {
-        require(!studentExists[msg.sender], "Student already exists");
-        _;
+    function registerVoter(uint _age) public {
+        voterAge = _age;
+        hasVoted[msg.sender] = false;
+        console.log("Voter registration complete. Age:", _age);
     }
 
-    modifier studentExistsOnly() {
-        require(studentExists[msg.sender], "Student does not exist");
-        _;
+    function vote(uint candidateId) public {
+        require(voterAge >= 18, "You must be at least 18 years old to vote");
+        require(!hasVoted[msg.sender], "You have already voted");
+        votes[candidateId]++;
+        hasVoted[msg.sender] = true;
+        console.log("Vote cast for candidate:", candidateId);
     }
 
-    function addStudent(string calldata name) external studentNotExists {
-        students[msg.sender] = Student(name, 0);
-        studentExists[msg.sender] = true;
-
-        // Assert that the student has been added
-        assert(studentExists[msg.sender] == true);
+    function checkAssert() public view {
+        assert(voterAge >= 18 && !hasVoted[msg.sender]);
+        console.log("You are eligible to vote.");
     }
 
-    function setGrade(address studentAddress, uint grade) external onlyOwner {
-        // Ensure grade is between 0 and 100
-        require(grade <= 100, "Grade must be between 0 and 100");
+    function checkRequire() public view {
+        require(voterAge >= 18, "You must be at least 18 years old to vote");
+        require(!hasVoted[msg.sender], "You have already voted");
+        console.log("You are eligible to vote.");
+    }
 
-        if (!studentExists[studentAddress]) {
-            revert("Student does not exist");
+    function checkRevert() public view {
+        if (voterAge < 18) {
+            revert("You must be at least 18 years old to vote");
+        } else if (hasVoted[msg.sender]) {
+            revert("You have already voted");
+        } else {
+            console.log("You are eligible to vote.");
         }
-
-        students[studentAddress].grade = grade;
     }
 
-    function getGrade() external view studentExistsOnly returns (string memory name, uint grade) {
-        Student storage student = students[msg.sender];
-        return (student.name, student.grade);
-    }
-
-    function removeStudent() external studentExistsOnly {
-        delete students[msg.sender];
-        studentExists[msg.sender] = false;
-
-        // Assert that the student has been removed
-        assert(studentExists[msg.sender] == false);
+    function getVotes(uint candidateId) public view returns (uint) {
+        return votes[candidateId];
     }
 }
-
