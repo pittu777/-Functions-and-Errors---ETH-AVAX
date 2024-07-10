@@ -111,3 +111,7 @@ function getVotes(uint candidateId) public view returns (uint) {
 - Returns: Number of votes cast for the specified candidate.
 
 
+### Authors
+PITTU PRASANTH - @pittu777
+
+
