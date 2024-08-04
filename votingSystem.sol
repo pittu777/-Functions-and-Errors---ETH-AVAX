@@ -1,59 +1,40 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "hardhat/console.sol";
-
-contract VotingSystem {
-    address public owner;
-    uint public voterAge;
-    mapping(address => bool) public hasVoted;
-    mapping(uint => uint) public votes;
+contract SchoolGrades {
+    mapping(address => uint8) private grades;
+    address public admin;
+    uint8 public constant MIN_GRADE = 0;
+    uint8 public constant MAX_GRADE = 100;
 
     constructor() {
-        owner = msg.sender;
+        admin = msg.sender;
     }
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only the owner can perform this action");
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Only admin can perform this action");
         _;
     }
 
-    function registerVoter(uint _age) public {
-        voterAge = _age;
-        hasVoted[msg.sender] = false;
-        console.log("Voter registration complete. Age:", _age);
+    function addStudent(address student, uint8 grade) public onlyAdmin {
+        require(grade >= MIN_GRADE && grade <= MAX_GRADE, "Invalid grade");
+        grades[student] = grade;
     }
 
-    function vote(uint candidateId) public {
-        require(voterAge >= 18, "You must be at least 18 years old to vote");
-        require(!hasVoted[msg.sender], "You have already voted");
-        votes[candidateId]++;
-        hasVoted[msg.sender] = true;
-        console.log("Vote cast for candidate:", candidateId);
+    function updateGrade(address student, uint8 newGrade) public onlyAdmin {
+        require(grades[student] != 0, "Student does not exist");
+        require(newGrade >= MIN_GRADE && newGrade <= MAX_GRADE, "Invalid grade");
+        grades[student] = newGrade;
     }
 
-    function checkAssert() public view {
-        assert(voterAge >= 18 && !hasVoted[msg.sender]);
-        console.log("You are eligible to vote.");
+    function getGrade(address student) public view returns (uint8) {
+        uint8 grade = grades[student];
+        assert(grade >= MIN_GRADE && grade <= MAX_GRADE); // Ensure the grade is in the valid range
+        return grade;
     }
 
-    function checkRequire() public view {
-        require(voterAge >= 18, "You must be at least 18 years old to vote");
-        require(!hasVoted[msg.sender], "You have already voted");
-        console.log("You are eligible to vote.");
-    }
-
-    function checkRevert() public view {
-        if (voterAge < 18) {
-            revert("You must be at least 18 years old to vote");
-        } else if (hasVoted[msg.sender]) {
-            revert("You have already voted");
-        } else {
-            console.log("You are eligible to vote.");
-        }
-    }
-
-    function getVotes(uint candidateId) public view returns (uint) {
-        return votes[candidateId];
+    function deleteStudent(address student) public onlyAdmin {
+        require(grades[student] != 0, "Student does not exist");
+        delete grades[student];
     }
 }
