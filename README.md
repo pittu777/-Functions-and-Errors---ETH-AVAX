@@ -1,115 +1,87 @@
-# VotingSystem Smart Contract
-The VotingSystem smart contract allows users to register as voters, cast votes for candidates, and retrieve voting results securely on the blockchain.
+# SchoolGrades Smart Contract
+This Solidity program is a simple smart contract for managing student grades in a school system. It demonstrates basic functionality such as adding, updating, retrieving, and deleting student grades.
 
-## Features
+## Description
 
-- Voter Registration: Users can register as voters by providing their age.
-- Voting: Registered voters can cast votes for their preferred candidates.
-- Validation Methods: Three methods (checkAssert, checkRequire, checkRevert) demonstrate different ways to validate voter eligibility and prevent duplicate voting.
-- Vote Tallying: Tracks votes for each candidate to determine election results.
-## Usage
+The SchoolGrades contract is designed to manage grades for students in a school. It allows an administrator to:
 
-### Prerequisites
-- Ensure you have an Ethereum development environment set up (e.g., Hardhat).
-- Solidity compiler version 0.8.0 or higher.
+- Add a new student's grade.
+- Update an existing student's grade.
+- Retrieve a student's grade.
+- Delete a student's record.
+  
+The contract ensures that grades are within a valid range (0 to 100) and uses error handling to manage exceptions effectively.
 
-## registerVoter Function
-The registerVoter function registers a new voter on the blockchain by setting their age and initializing their voting status.
+## Getting Started
+To interact with this smart contract, you can use the Remix IDE, an online tool for Solidity development.
 
-Increments the vote count for the specified candidateId.
-Updates the voting status for the sender.
-Logs the successful casting of the vote.
+#### Executing the Contract
+- Open Remix IDE:
+- Go to Remix Ethereum IDE.
+
+- Create a New File:
+Click on the "+" icon in the left-hand sidebar. Save the file with a .sol extension (e.g., SchoolGrades.sol).
+
+## Code
 
 ```solidity
-function registerVoter(uint _age) public {
-    voterAge = _age;
-    hasVoted[msg.sender] = false;
-    console.log("Voter registration complete. Age:", _age);
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract SchoolGrades {
+    mapping(address => uint8) private grades;
+    address public admin;
+    uint8 public constant MIN_GRADE = 0;
+    uint8 public constant MAX_GRADE = 100;
+
+    constructor() {
+        admin = msg.sender;
+    }
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Only admin can perform this action");
+        _;
+    }
+
+    function addStudent(address student, uint8 grade) public onlyAdmin {
+        require(grade >= MIN_GRADE && grade <= MAX_GRADE, "Invalid grade");
+        grades[student] = grade;
+    }
+
+    function updateGrade(address student, uint8 newGrade) public onlyAdmin {
+        require(grades[student] != 0, "Student does not exist");
+        require(newGrade >= MIN_GRADE && newGrade <= MAX_GRADE, "Invalid grade");
+        grades[student] = newGrade;
+    }
+
+    function getGrade(address student) public view returns (uint8) {
+        uint8 grade = grades[student];
+        assert(grade >= MIN_GRADE && grade <= MAX_GRADE); // Ensure the grade is in the valid range
+        return grade;
+    }
+
+    function deleteStudent(address student) public onlyAdmin {
+        require(grades[student] != 0, "Student does not exist");
+        delete grades[student];
+    }
 }
 
- function vote(uint candidateId) public {
-        require(voterAge >= 18, "You must be at least 18 years old to vote");
-        require(!hasVoted[msg.sender], "You have already voted");
-        votes[candidateId]++;
-        hasVoted[msg.sender] = true;
-        console.log("Vote cast for candidate:", candidateId);
-    }
-```
-### checkAssert()
-
-``` solidity
-function checkAssert() public view {
-        assert(voterAge >= 18 && !hasVoted[msg.sender]);
-        console.log("You are eligible to vote.");
-    }
 ```
 
-Checks voter eligibility using assert.
+## Compile the Code:
 
-#### Requirements:
-- Voter must be at least 18 years old.
-- Voter must not have already voted.
+Click on the "Solidity Compiler" tab in the left-hand sidebar. Set the compiler version to 0.8.0 or another compatible version, and then click "Compile SchoolGrades.sol".
 
-#### Functionality:
+## Deploy the Contract:
+Go to the "Deploy & Run Transactions" tab in the left-hand sidebar. Select the SchoolGrades contract from the dropdown menu and click "Deploy".
 
-- Asserts voter eligibility conditions.
-- Logs eligibility status.
+## Interact with the Contract:
+After deployment, you can interact with the contract. Use the functions provided:
 
-### checkRequire()
-
-```solidity
-function checkRequire() public view {
-        require(voterAge >= 18, "You must be at least 18 years old to vote");
-        require(!hasVoted[msg.sender], "You have already voted");
-        console.log("You are eligible to vote.");
-    }
-```
-
-Checks voter eligibility using require.
-
-#### Requirements:
-- Voter must be at least 18 years old.
-- Voter must not have already voted.
-#### Functionality:
-- Requires voter eligibility conditions.
-- Logs eligibility status.
-
-### checkRevert()
-
-``` solidity
-function checkRevert() public view {
-        if (voterAge < 18) {
-            revert("You must be at least 18 years old to vote");
-        } else if (hasVoted[msg.sender]) {
-            revert("You have already voted");
-        } else {
-            console.log("You are eligible to vote.");
-        }
-    }
-```
-Checks voter eligibility using conditional revert.
-
-#### Requirements:
-- Voter must be at least 18 years old.
-- Voter must not have already voted.
-#### Functionality:
-- Reverts transaction with specific error messages if conditions are not met.
-- Logs eligibility status or revert reason.
-
-### getVotes(uint candidateId)
-
-```solidity
-function getVotes(uint candidateId) public view returns (uint) {
-        return votes[candidateId];
-    }
-```
-
-- Retrieves the number of votes cast for a specific candidate.
-
-#### Parameters:
-- candidateId: Identifier of the candidate to retrieve votes for.
-- Returns: Number of votes cast for the specified candidate.
-
+addStudent: Add a new student with a grade.
+updateGrade: Update an existing student's grade.
+getGrade: Retrieve a student's grade.
+deleteStudent: Delete a student's record.
 
 ### Authors
 PITTU PRASANTH - @pittu777
