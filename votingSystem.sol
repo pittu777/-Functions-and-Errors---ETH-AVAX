@@ -29,7 +29,7 @@ contract SchoolGrades {
 
     function getGrade(address student) public view returns (uint8) {
         uint8 grade = grades[student];
-        assert(grade >= MIN_GRADE && grade <= MAX_GRADE); // Ensure the grade is in the valid range
+        assert(grade >= MIN_GRADE && grade <= MAX_GRADE); 
         return grade;
     }
 
